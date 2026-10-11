@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tool Wheel: A, true radial</title>
+<!-- Mockup only. "Play" stands in for DU's HUD sans; in game the family is read from a stock text element. -->
+<link href="https://fonts.googleapis.com/css2?family=Play:wght@400;700&display=block" rel="stylesheet">
+<style>
+  :root {
+    --line: rgba(200, 228, 240, 0.24);
+    --line-hi: rgba(222, 240, 248, 0.9);
+    --panel: rgba(9, 13, 17, 0.80);
+    --panel-hub: rgba(7, 10, 13, 0.88);
+    --hover: rgba(196, 230, 244, 0.15);
+    --text: rgb(222, 236, 242);
+    --dim: rgba(222, 236, 242, 0.58);
+    --solid: rgb(216, 238, 246);
+  }
+  html, body { margin: 0; width: 3840px; height: 2160px; overflow: hidden; background: #000; }
+  body { font-family: "Play", sans-serif; color: var(--text); }
+  #bg { position: absolute; inset: 0; background: url(assets/backdrop.jpg) center / cover; }
+  #dim { position: absolute; inset: 0; background: rgba(3, 6, 9, 0.42); }
+  svg { position: absolute; left: 0; top: 0; }
+  .hub { position: absolute; left: 1920px; top: 1080px; width: 420px; margin-left: -210px; text-align: center; transform: translateY(-50%); }
+  .hub .hdr { font-size: 26px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--dim); }
+  .hub .rule { width: 96px; height: 2px; background: var(--line); margin: 22px auto 24px; }
+  .hub .name { font-size: 56px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; line-height: 1.05; }
+  .hub .desc { font-size: 30px; color: var(--dim); margin-top: 16px; line-height: 1.3; }
+  .hub .slot { font-size: 24px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); margin-top: 26px; }
+  .hub .slot b { color: var(--text); font-weight: 400; }
+  .hints { position: absolute; left: 0; right: 0; top: 1790px; text-align: center; font-size: 26px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); }
+  .hints span { margin: 0 34px; }
+  kbd { font-family: inherit; display: inline-block; min-width: 30px; padding: 4px 12px; margin-right: 14px; border: 2px solid var(--line-hi); color: var(--text); font-size: 22px; letter-spacing: 0.06em; }
+  .tag { position: absolute; left: 60px; top: 50px; font-size: 28px; letter-spacing: 0.16em; color: rgba(255,255,255,0.7); text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div id="bg"></div>
+<div id="dim"></div>
+<svg id="w" width="3840" height="2160" viewBox="0 0 3840 2160"></svg>
+<div class="hub">
+  <div class="hdr">Roaming tools</div>
+  <div class="rule"></div>
+  <div class="name">Repair Tool</div>
+  <div class="desc">Fix damaged elements</div>
+  <div class="slot">Bar slot <b>7</b></div>
+</div>
+<div class="hints">
+  <span><kbd>LMB</kbd>Equip</span>
+  <span><kbd>RMB</kbd>Build tools</span>
+  <span><kbd>ESC</kbd>Close</span>
+</div>
+<div class="tag">Mockup A: true radial, 3840&times;2160</div>
+<script>
+  var CX = 1920, CY = 1080, RO = 600, RI = 336, GAP = 8;
+  var HUB = 252, TI = 270, TO = 316;
+  var tools = [
+    ["harvest", "Harvest", 0], ["blueprint", "Construct", 0], ["refuel", "Refuel", 0],
+    ["mining", "Mining", 4], ["scanner", "Scanner", 0], ["detector", "Detector", 0],
+    ["flatten", "Flatten", 0], ["smooth", "Smooth", 0], ["deploy", "Element", 0],
+    ["repair", "Repair", 7], ["maneuver", "Maneuver", 0]
+  ];
+  var HOVER = 9, EQUIPPED = 3;
+  var NS = "http://www.w3.org/2000/svg", svg = document.getElementById("w");
+  function E(tag, a, parent) {
+    var n = document.createElementNS(NS, tag);
+    for (var k in a) n.setAttribute(k, a[k]);
+    (parent || svg).appendChild(n); return n;
+  }
+  function P(r, deg) { var a = deg * Math.PI / 180; return [CX + r * Math.cos(a), CY + r * Math.sin(a)]; }
+  // Annular sector with a constant pixel gap on both straight edges.
+  function sector(r0, r1, a0, a1, gap) {
+    var g0 = Math.asin(gap / 2 / r0) * 180 / Math.PI, g1 = Math.asin(gap / 2 / r1) * 180 / Math.PI;
+    var p1 = P(r1, a0 + g1), p2 = P(r1, a1 - g1), p3 = P(r0, a1 - g0), p4 = P(r0, a0 + g0);
+    var big = (a1 - a0) > 180 ? 1 : 0;
+    return "M" + p1 + " A" + r1 + "," + r1 + " 0 " + big + " 1 " + p2 + " L" + p3 +
+      " A" + r0 + "," + r0 + " 0 " + big + " 0 " + p4 + " Z";
+  }
+  function arc(r, a0, a1) {
+    var p1 = P(r, a0), p2 = P(r, a1);
+    return "M" + p1 + " A" + r + "," + r + " 0 " + ((a1 - a0) > 180 ? 1 : 0) + " 1 " + p2;
+  }
+  var n = tools.length, step = 360 / n;
+  // Wedges: item 0 centred on 12 o'clock, clockwise.
+  for (var i = 0; i < n; i++) {
+    var mid = -90 + i * step, a0 = mid - step / 2, a1 = mid + step / 2;
+    var hov = i === HOVER;
+    E("path", { d: sector(RI, RO, a0, a1, GAP), fill: hov ? "rgba(196,230,244,0.15)" : "rgba(9,13,17,0.80)",
+      stroke: hov ? "rgba(222,240,248,0.9)" : "rgba(200,228,240,0.24)", "stroke-width": 2 });
+    if (hov) {
+      // Selection bar outside the wedge: a solid band, no glow.
+      E("path", { d: sector(RO + 12, RO + 22, a0, a1, GAP), fill: "rgb(216,238,246)" });
+    }
+    var ic = P(470, mid);
+    E("image", { href: "assets/icons/" + tools[i][0] + ".png", x: ic[0] - 56, y: ic[1] - 74, width: 112, height: 112,
+      opacity: hov ? 1 : 0.82 });
+    var t = E("text", { x: ic[0], y: ic[1] + 74, "text-anchor": "middle", "font-size": 24, "letter-spacing": "2.6",
+      fill: hov ? "rgb(222,236,242)" : "rgba(222,236,242,0.62)", "font-family": "Play" });
+    t.textContent = tools[i][1].toUpperCase();
+    if (tools[i][2]) {
+      var sp = P(RO - 34, a0 + 7.2);
+      var s = E("text", { x: sp[0], y: sp[1] + 8, "text-anchor": "middle", "font-size": 22,
+        fill: "rgba(222,236,242,0.7)", "font-family": "Play" });
+      s.textContent = tools[i][2];
+    }
+    if (i === EQUIPPED) {
+      // Equipped: a short solid tick on the inner edge.
+      E("path", { d: arc(RI + 10, mid - 6, mid + 6), stroke: "rgb(216,238,246)", "stroke-width": 4, fill: "none" });
+    }
+  }
+  // Mode ring: two arcs between hub and wedges.
+  E("path", { d: sector(TI, TO, -172, -8, 6), fill: "rgba(196,230,244,0.16)", stroke: "rgba(222,240,248,0.9)", "stroke-width": 2 });
+  E("path", { d: sector(TI, TO, 8, 172, 6), fill: "rgba(9,13,17,0.80)", stroke: "rgba(200,228,240,0.30)", "stroke-width": 2 });
+  var defs = E("defs", {});
+  E("path", { id: "topArc", d: arc((TI + TO) / 2 - 9, -150, -30) }, defs);
+  E("path", { id: "botArc", d: "M" + P((TI + TO) / 2 + 9, 150) + " A" + ((TI + TO) / 2 + 9) + "," + ((TI + TO) / 2 + 9) + " 0 0 0 " + P((TI + TO) / 2 + 9, 30) }, defs);
+  function arcText(id, label, fill) {
+    var t = E("text", { "font-size": 24, "letter-spacing": "4", fill: fill, "font-family": "Play", "font-weight": 700 });
+    var tp = E("textPath", { href: "#" + id, startOffset: "50%", "text-anchor": "middle" }, t);
+    tp.textContent = label;
+  }
+  arcText("topArc", "ROAMING  11", "rgb(222,236,242)");
+  arcText("botArc", "BUILD  10", "rgba(222,236,242,0.6)");
+  // Hub.
+  E("circle", { cx: CX, cy: CY, r: HUB, fill: "rgba(7,10,13,0.88)", stroke: "rgba(200,228,240,0.34)", "stroke-width": 2 });
+  // Direction pointer on the hub rim, toward the hovered wedge.
+  var pm = -90 + HOVER * step, q1 = P(HUB - 2, pm - 4), q2 = P(HUB - 2, pm + 4), q3 = P(HUB - 22, pm);
+  E("path", { d: "M" + q1 + " L" + q2 + " L" + q3 + " Z", fill: "rgb(216,238,246)" });
+</script>
+</body>
+</html>

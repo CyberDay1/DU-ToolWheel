@@ -1,0 +1,13 @@
+bin/
+obj/
+*.user
+.vs/
+.vscode/
+# NQ toolkit assemblies: copied locally from the mod toolkit, never committed (toolkit licence).
+lib/*.dll
+__pycache__/
+*.pyc
+node_modules/
+# Mockup renders and their assets use game icons and screenshots: kept locally, never committed.
+mockups/*.png
+mockups/assets/

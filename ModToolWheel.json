@@ -1,0 +1,42 @@
+{
+  // Tool Wheel settings. Copy next to ModToolWheel.dll in the server's Mods folder.
+  // Every key is optional; these are the defaults.
+
+  // "4" by default: one letter or digit, or a JavaScript keyCode ("220" is backslash).
+  // A digit is also DU's own tool bar slot key; unbind that slot in DU's Controls settings for
+  // the cleanest result. The right-click menu entry Tool Wheel > Open always works.
+  // This is the server default: each player can pick their own key in the wheel (hub > Change),
+  // saved in Mods/ToolWheel/player-hotkeys.json.
+  "Hotkey": "4",
+  "EnableHotkey": true,
+  // Opt-in: hold Alt to open, aim, release to pick. Off by default (Alt is a stock modifier).
+  "HoldAlt": false,
+  "ShowHudIcon": true,
+
+  // Shown only until the wheel has worked out whether the game is in build mode.
+  "DefaultBar": "explore",
+  "ShowAllTools": false,
+  // The bar slot tools are loaded into. With SingleSlotBar on, the only occupied slot of each
+  // tool bar, so the stock slot keys 1-8 hit empty slots.
+  "LoadSlot": 9,
+  "SingleSlotBar": true,
+
+  // The wheel replaces the stock tool bar (the consumable bar stays).
+  "HideStockBar": true,
+  // Experimental, off: the inventory grid re-renders while scrolling, so hidden tools flash back.
+  "HideToolsInInventory": false,
+  // Park the tools in nanopack slots the inventory grid does not draw (at login and from
+  // Tool Wheel > Hide tools). Tool Wheel > Unhide tools moves them back.
+  "HideToolsInNanopack": true,
+  "HiddenSlotBase": 1000,
+
+  // Quick-select: while the wheel is open, the key of a wedge equips that tool. One key per
+  // wedge in wheel order; digits also match the numpad. [] turns it off.
+  "QuickKeys": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "="],
+
+  "InjectDelaysSeconds": [3, 8, 15, 30, 60, 120, 240],
+  "ScriptOverridePath": "/OrleansGrains/Mods/ToolWheel/toolwheel.js",
+
+  "Debug": false,
+  "DebugForwardPerMinute": 120
+}

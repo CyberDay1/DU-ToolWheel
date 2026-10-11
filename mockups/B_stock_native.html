@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tool Wheel: B, stock-native</title>
+<!-- Mockup only. "Play" stands in for DU's HUD sans; in game the family is read from a stock text element,
+     and the row/kbd styling would come from the stock .context_menu classes in dual.css. -->
+<link href="https://fonts.googleapis.com/css2?family=Play:wght@400;700&display=block" rel="stylesheet">
+<style>
+  :root {
+    --line: rgba(200, 228, 240, 0.26);
+    --line-hi: rgba(222, 240, 248, 0.85);
+    --panel: rgba(16, 22, 27, 0.88);
+    --row-hover: rgb(206, 232, 242);
+    --text: rgb(222, 236, 242);
+    --dim: rgba(222, 236, 242, 0.58);
+    --ink: rgb(12, 18, 22);
+  }
+  html, body { margin: 0; width: 3840px; height: 2160px; overflow: hidden; background: #000; }
+  body { font-family: "Play", sans-serif; color: var(--text); }
+  #bg { position: absolute; inset: 0; background: url(assets/backdrop.jpg) center / cover; }
+  #dim { position: absolute; inset: 0; background: rgba(3, 6, 9, 0.38); }
+  svg { position: absolute; left: 0; top: 0; }
+
+  /* A context-menu row: slot-style icon cell, uppercase label, shortcut kbd on the far side. */
+  .row { position: absolute; height: 84px; width: 500px; display: flex; align-items: center;
+         background: var(--panel); border: 2px solid var(--line); box-sizing: border-box; }
+  .row .ic { width: 80px; height: 80px; flex: none; display: flex; align-items: center; justify-content: center;
+             border-right: 2px solid var(--line); }
+  .row .ic img { width: 64px; height: 64px; opacity: 0.85; }
+  .row .lb { flex: 1; padding: 0 26px; font-size: 28px; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; }
+  .row kbd { margin-right: 18px; }
+  .row.left { flex-direction: row-reverse; }
+  .row.left .ic { border-right: 0; border-left: 2px solid var(--line); }
+  .row.left .lb { text-align: right; }
+  .row.left kbd { margin-right: 0; margin-left: 18px; }
+  .row.hover { background: var(--row-hover); border-color: var(--row-hover); color: var(--ink); }
+  .row.hover .ic { border-color: rgba(12, 18, 22, 0.35); background: rgba(12, 18, 22, 0.88); }
+  .row.hover .ic img { opacity: 1; }
+  .row.hover kbd { border-color: var(--ink); color: var(--ink); }
+  .row.equipped .lb::after { content: "  \2022  equipped"; color: var(--dim); font-size: 22px; letter-spacing: 0.12em; }
+  kbd { font-family: inherit; display: inline-block; min-width: 26px; text-align: center; padding: 3px 10px;
+        border: 2px solid var(--line-hi); font-size: 22px; color: var(--text); }
+  kbd.ghost { visibility: hidden; }
+
+  .tabs { position: absolute; left: 1920px; top: 640px; transform: translateX(-50%); display: flex; }
+  .tab { width: 300px; padding: 18px 0 16px; text-align: center; font-size: 28px; letter-spacing: 0.18em; text-transform: uppercase;
+         background: var(--panel); border: 2px solid var(--line); color: var(--dim); }
+  .tab + .tab { border-left: 0; }
+  .tab.on { color: var(--text); border-bottom: 4px solid var(--row-hover); }
+  .tab small { font-size: 22px; letter-spacing: 0.1em; margin-left: 12px; color: var(--dim); }
+
+  .detail { position: absolute; left: 1920px; top: 1500px; width: 1180px; transform: translateX(-50%);
+            background: var(--panel); border: 2px solid var(--line); box-sizing: border-box; }
+  .detail .hd { display: flex; justify-content: space-between; padding: 20px 30px 18px; border-bottom: 2px solid var(--line);
+                font-size: 24px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--dim); }
+  .detail .bd { padding: 24px 30px 28px; }
+  .detail .name { font-size: 46px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+  .detail .desc { font-size: 30px; color: var(--dim); margin-top: 10px; }
+  .detail .ft { display: flex; gap: 48px; padding: 18px 30px; border-top: 2px solid var(--line);
+                font-size: 24px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); }
+  .detail .ft kbd { margin-right: 12px; }
+  .tag { position: absolute; left: 60px; top: 50px; font-size: 28px; letter-spacing: 0.16em; color: rgba(255,255,255,0.7); text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div id="bg"></div>
+<div id="dim"></div>
+<svg id="w" width="3840" height="2160" viewBox="0 0 3840 2160"></svg>
+<div id="rows"></div>
+<div class="tabs">
+  <div class="tab on">Roaming<small>11</small></div>
+  <div class="tab">Build<small>10</small></div>
+</div>
+<div class="detail">
+  <div class="hd"><span>Tool wheel</span><span>Not on bar &middot; loads into slot 9</span></div>
+  <div class="bd">
+    <div class="name">Repair Tool</div>
+    <div class="desc">Fix damaged elements</div>
+  </div>
+  <div class="ft"><span><kbd>LMB</kbd>Equip</span><span><kbd>RMB</kbd>Build tools</span><span><kbd>ESC</kbd>Close</span></div>
+</div>
+<div class="tag">Mockup B: stock-native, 3840&times;2160</div>
+<script>
+  var CX = 1920, CY = 1080;
+  // Clockwise from 12 o'clock: right column top to bottom, then left column bottom to top.
+  var right = [["harvest", "Harvest", ""], ["blueprint", "Deploy construct", ""], ["refuel", "Refuel", ""],
+               ["mining", "Mining", "4"], ["scanner", "Scanner", ""], ["detector", "Detector", ""]];
+  var left = [["flatten", "Flatten", ""], ["smooth", "Smooth", ""], ["deploy", "Deploy element", ""],
+              ["repair", "Repair", ""], ["maneuver", "Maneuver", ""]];
+  var HOVER = "repair", EQUIPPED = "mining";
+  var host = document.getElementById("rows"), NS = "http://www.w3.org/2000/svg", svg = document.getElementById("w");
+  var PITCH = 104, R = 470, HUB = 150;
+  function row(t, side, y) {
+    var dy = y - CY, inset = 150 + Math.sqrt(Math.max(0, R * R - dy * dy)) * 0.55;
+    var d = document.createElement("div");
+    d.className = "row " + side + (t[0] === HOVER ? " hover" : "") + (t[0] === EQUIPPED ? " equipped" : "");
+    d.style.top = (y - 42) + "px";
+    if (side === "right") d.style.left = (CX + inset) + "px"; else d.style.left = (CX - inset - 500) + "px";
+    d.innerHTML = '<div class="ic"><img src="assets/icons/' + t[0] + '.png"></div><div class="lb">' + t[1] +
+      '</div><kbd class="' + (t[2] ? "" : "ghost") + '">' + (t[2] || "0") + "</kbd>";
+    host.appendChild(d);
+    return { x: side === "right" ? CX + inset : CX - inset, y: y, id: t[0] };
+  }
+  var anchors = [];
+  for (var i = 0; i < right.length; i++) anchors.push(row(right[i], "right", CY + (i - (right.length - 1) / 2) * PITCH));
+  for (var j = 0; j < left.length; j++) anchors.push(row(left[j], "left", CY + ((left.length - 1) / 2 - j) * PITCH));
+  function E(tag, a) { var n = document.createElementNS(NS, tag); for (var k in a) n.setAttribute(k, a[k]); svg.appendChild(n); return n; }
+  // Hub: a thin ring with tick marks toward every row, and a leader line to the hovered row.
+  E("circle", { cx: CX, cy: CY, r: HUB, fill: "rgba(16,22,27,0.70)", stroke: "rgba(200,228,240,0.30)", "stroke-width": 2 });
+  E("circle", { cx: CX, cy: CY, r: 6, fill: "rgba(222,236,242,0.8)" });
+  anchors.forEach(function (a) {
+    var ang = Math.atan2(a.y - CY, a.x - CX), hov = a.id === HOVER;
+    var r0 = HUB - (hov ? 24 : 14), r1 = HUB;
+    E("line", { x1: CX + r0 * Math.cos(ang), y1: CY + r0 * Math.sin(ang), x2: CX + r1 * Math.cos(ang), y2: CY + r1 * Math.sin(ang),
+      stroke: hov ? "rgb(206,232,242)" : "rgba(200,228,240,0.45)", "stroke-width": hov ? 4 : 2 });
+    if (hov) {
+      E("line", { x1: CX + (HUB + 10) * Math.cos(ang), y1: CY + (HUB + 10) * Math.sin(ang), x2: a.x - 10, y2: a.y,
+        stroke: "rgba(206,232,242,0.75)", "stroke-width": 2 });
+    }
+  });
+  var t = E("text", { x: CX, y: CY - 30, "text-anchor": "middle", "font-size": 22, "letter-spacing": "4",
+    fill: "rgba(222,236,242,0.58)", "font-family": "Play" });
+  t.textContent = "ROAMING";
+  var t2 = E("text", { x: CX, y: CY + 52, "text-anchor": "middle", "font-size": 22, "letter-spacing": "3",
+    fill: "rgba(222,236,242,0.58)", "font-family": "Play" });
+  t2.textContent = "AIM + CLICK";
+</script>
+</body>
+</html>

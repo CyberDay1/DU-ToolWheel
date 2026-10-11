@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Tests only the pure logic (toolbar parsing, config): no NQ assemblies needed. -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>annotations</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\src\ToolbarLayout.cs" Link="ToolbarLayout.cs" />
+    <Compile Include="..\src\ToolWheelConfig.cs" Link="ToolWheelConfig.cs" />
+    <Compile Include="..\src\ToolCatalog.cs" Link="ToolCatalog.cs" />
+    <Compile Include="..\src\NanopackHiding.cs" Link="NanopackHiding.cs" />
+    <Compile Include="..\src\PlayerHotkeys.cs" Link="PlayerHotkeys.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+</Project>
